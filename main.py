@@ -27,7 +27,7 @@ class MainWindow(QWidget):
 
         self.ui.btn_start.clicked.connect(self.guess_game)
         self.ui.btn_reset.clicked.connect(self.reset_guess)
-        self.ui.hads.textChanged.connect(self.check_guess)
+        self.ui.btn_check.clicked.connect(self.check_guess)
 
         self.ui.show()
 
@@ -69,17 +69,22 @@ class MainWindow(QWidget):
             self.pass_word = ''
             for i in range(7):
                 self.pass_word = self.pass_word + random.choice(self.weak_pass_list)
-            self.ui.tb_pass.setText(self.pass_word)
+            #self.ui.tb_pass.setText(self.pass_word)
         elif self.ui.rb_n.isChecked():
             self.pass_word = ''
             for i in range(10):
                 self.pass_word = self.pass_word + random.choice(self.good_pass_list)
-            self.ui.tb_pass.setText(self.pass_word)
+            #self.ui.tb_pass.setText(self.pass_word)
         elif self.ui.rb_s.isChecked():
             self.pass_word = ''
             for i in range(18):
                 self.pass_word = self.pass_word + random.choice(self.good_pass_list)
+            #self.ui.tb_pass.setText(self.pass_word)
+        if any(c.isdigit() for c in self.pass_word):
             self.ui.tb_pass.setText(self.pass_word)
+        else:
+            self.ui.tb_pass.setText((self.pass_word) + str(random.randint(0,9)))
+
 
 
     def translate(self):
