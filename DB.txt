@@ -1,0 +1,11 @@
+word,meaning
+one,یک
+two,دو
+three,سه
+four,چهار
+five,پنج
+six,شش
+seven,هفت
+eight,هشت
+nine,نه
+ten,ده

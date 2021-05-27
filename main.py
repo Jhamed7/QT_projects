@@ -1,173 +1,117 @@
- # This Python file uses the following encoding: utf-8
-import os
-from pathlib import Path
+# -*- coding: utf-8 -*-
 import sys
-
+import random
+import pandas as pd
+from functools import partial
+from PySide6.QtWidgets import QMessageBox
 from PySide6.QtWidgets import QApplication, QWidget
 from PySide6.QtUiTools import QUiLoader
 
 
-class mainwindow(QWidget):
+class MainWindow(QWidget):
     def __init__(self):
-        super(mainwindow, self).__init__()
+        super(MainWindow, self).__init__()
 
         loader = QUiLoader()
         self.ui = loader.load('form.ui')
+
+        self.db = pd.read_csv('DB.txt', sep=',')
+        self.ui.btn_tr.clicked.connect(self.translate)
+        self.ui.btn_clr.clicked.connect(self.reset)
+        self.ui.btn_a.clicked.connect(self.arrange)
+
+        self.ui.btn_pass.clicked.connect(self.password)
+        self.weak_pass_list = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+        self.good_pass_list = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&|?><:;~'
+        self.pass_word = ''
+
+        self.ui.btn_start.clicked.connect(self.guess_game)
+        self.ui.btn_reset.clicked.connect(self.reset_guess)
+        self.ui.hads.textChanged.connect(self.check_guess)
+
         self.ui.show()
 
-        self.a = ''
-        self.b = ''
-        self.op = ''
-        self.op2 = ''
-
-        self.ui.sum.clicked.connect(self.sum)
-        self.ui.sub.clicked.connect(self.sub)
-        self.ui.mul.clicked.connect(self.mul)
-        self.ui.div.clicked.connect(self.div)
-        self.ui.equal.clicked.connect(self.equal)
-
-        self.ui.clear.clicked.connect(self.clear)
-        self.ui.btn_dot.clicked.connect(self.dot)
-        self.ui.negative.clicked.connect(self.negative)
-        self.ui.percent.clicked.connect(self.percent)
+    def guess_game(self):
+        self.guess_count = 0
+        self.ui.lbl_guess.setText('my number is in range [1, 20]')
+        self.random_num = random.randint(1, 20)
+        self.ui.hads.setText('')
 
 
-        self.ui.btn_1.clicked.connect(self.num1)
-        self.ui.btn_2.clicked.connect(self.num2)
-        self.ui.btn_3.clicked.connect(self.num3)
-        self.ui.btn_4.clicked.connect(self.num4)
-        self.ui.btn_5.clicked.connect(self.num5)
-        self.ui.btn_6.clicked.connect(self.num6)
-        self.ui.btn_7.clicked.connect(self.num7)
-        self.ui.btn_8.clicked.connect(self.num8)
-        self.ui.btn_9.clicked.connect(self.num9)
-        self.ui.btn_0.clicked.connect(self.num0)
+    def check_guess(self):
+        if self.ui.hads.text() != '':
+            self.guessed = int(self.ui.hads.text())
+            if self.random_num > self.guessed:
+                self.ui.lbl_guess.setText('Lower!')
+                self.guess_count += 1
+            elif self.random_num < self.guessed:
+                self.ui.lbl_guess.setText('Higher!')
+                self.guess_count += 1
+            elif self.random_num == self.guessed:
+                self.ui.lbl_guess.setText('Correct!')
+                self.guess_count += 1
+                msg_box = QMessageBox()
+                msg_box.setText(f'you tried {self.guess_count} times!')
+                msg_box.exec()
 
-    def num1(self):
-        self.ui.tb1.setText(self.ui.tb1.text() + '1')
+    def reset_guess(self):
+        self.ui.lbl_guess.setText('Try to guess my number AGAIN!')
+        self.ui.hads.setText('')
 
-    def num2(self):
-        self.ui.tb1.setText(self.ui.tb1.text() + '2')
+    def arrange(self):
+        self.text_in = self.ui.te_in.toPlainText()
+        print(self.text_in)
+        self.ui.te_out.setText(self.text_in.replace('\n', ''))
 
-    def num3(self):
-        self.ui.tb1.setText(self.ui.tb1.text() + '3')
-
-    def num4(self):
-        self.ui.tb1.setText(self.ui.tb1.text() + '4')
-
-    def num5(self):
-        self.ui.tb1.setText(self.ui.tb1.text() + '5')
-
-    def num6(self):
-        self.ui.tb1.setText(self.ui.tb1.text() + '6')
-
-    def num7(self):
-        self.ui.tb1.setText(self.ui.tb1.text() + '7')
-
-    def num8(self):
-        self.ui.tb1.setText(self.ui.tb1.text() + '8')
-
-    def num9(self):
-        self.ui.tb1.setText(self.ui.tb1.text() + '9')
-
-    def num0(self):
-        self.ui.tb1.setText(self.ui.tb1.text() + '0')
-
-    def equal(self):
-
-        if self.op2 != '%':
-            self.b = self.ui.tb1.text()
-
-        if isinstance(self.a, str):
-            if '.' in self.a:
-                self.a = float(self.a)
-            else:
-                self.a = int(self.a)
-
-        if isinstance(self.b, str):
-            if '.' in self.b:
-                self.b = float(self.b)
-            else:
-                self.b = int(self.b)
-        # if '.' in self.b and isinstance(self.b, str):
-        #     self.b = float(self.b)
-        # else:
-        #     self.b = int(self.b)
-
-        if self.op == '+':
-            if self.op2 == '%':
-                self.a, self.b = int(self.a),int(self.b)
-                res = (self.a) + (self.b / 100)*(self.a)
-                self.op2 = ''
-            else:
-                res = (self.a) + (self.b)
-
-        elif self.op == '-':
-            if self.op2 == '%':
-                self.a, self.b = int(self.a),int(self.b)
-                res = (self.a) - (self.b / 100)*(self.a)
-                self.op2 = ''
-            else:
-                res = (self.a) - (self.b)
-        elif self.op == '*':
-            res = (self.a) * (self.b)
-        elif self.op == '/':
-            if self.b != '0':
-                res = (self.a) / (self.b)
-            else:
-                self.ui.tb1.clear()
-                self.ui.tb1.setText('IMPOSSIBLE!')
-
-        # res = self.a
-        if res is not None:
-            if type(res) is float:
-                res = format(res, '.7f')
-
-        self.ui.tb1.setText(str(res).rstrip('0'))
-
-    def sum(self):
-        self.op = '+'
-        self.a = self.ui.tb1.text()
-        self.ui.tb1.clear()
-
-    def sub(self):
-        self.op = '-'
-        self.a = self.ui.tb1.text()
-        self.ui.tb1.clear()
-
-    def mul(self):
-        self.op = '*'
-        self.a = self.ui.tb1.text()
-        self.ui.tb1.clear()
-
-    def div(self):
-        self.op = '/'
-        self.a = self.ui.tb1.text()
-        self.ui.tb1.clear()
-
-    def clear(self):
-        self.ui.tb1.setText('')
-        self.a = ''
-        self.b = ''
-
-    def dot(self):
-        if '.' not in self.ui.tb1.text():
-            self.ui.tb1.setText(self.ui.tb1.text() + '.')
-
-    def negative(self):
-        if '-' in self.ui.tb1.text():
-            self.ui.tb1.setText(self.ui.tb1.text().lstrip('-'))
-        else:
-            self.ui.tb1.setText('-' + self.ui.tb1.text())
-
-    def percent(self):
-        self.op2 = '%'
-        self.b = self.ui.tb1.text()
-        self.ui.tb1.clear()
+    def password(self):
+        #self.ui.tb_pass.setText('')
+        if self.ui.rb_w.isChecked():
+            self.pass_word = ''
+            for i in range(7):
+                self.pass_word = self.pass_word + random.choice(self.weak_pass_list)
+            self.ui.tb_pass.setText(self.pass_word)
+        elif self.ui.rb_n.isChecked():
+            self.pass_word = ''
+            for i in range(10):
+                self.pass_word = self.pass_word + random.choice(self.good_pass_list)
+            self.ui.tb_pass.setText(self.pass_word)
+        elif self.ui.rb_s.isChecked():
+            self.pass_word = ''
+            for i in range(18):
+                self.pass_word = self.pass_word + random.choice(self.good_pass_list)
+            self.ui.tb_pass.setText(self.pass_word)
 
 
+    def translate(self):
+        if self.ui.rb_en_fa.isChecked():
+            if self.ui.tb_in.text() != '':
+                self.word = self.ui.tb_in.text()
+                if len(self.db[self.db['word'].str.contains(self.word)]['word'])>0:
+                    self.ui.tb_out.setText('')
+                    self.mean = self.db[self.db['word'].str.contains(self.word)]['meaning'].item()
+                    self.ui.tb_out.setText(self.mean)
+                else:
+                    msg_box = QMessageBox()
+                    msg_box.setText("Unknown Word, please input from one to ten")
+                    msg_box.exec()
+
+        elif self.ui.rb_fa_en.isChecked():
+            if self.ui.tb_out.text() != '':
+                self.word = self.ui.tb_out.text()
+                if len(self.db[self.db['meaning'].str.contains(self.word)]['meaning'])>0:
+                    self.ui.tb_in.setText('')
+                    self.mean = self.db[self.db['meaning'].str.contains(self.word)]['word'].item()
+                    self.ui.tb_in.setText(self.mean)
+                else:
+                    msg_box = QMessageBox()
+                    msg_box.setText("لطفا از کلمات یک تا ده انتخاب کنید")
+                    msg_box.exec()
+
+    def reset(self):
+        self.ui.tb_out.setText('')
+        self.ui.tb_in.setText('')
 
 if __name__ == "__main__":
     app = QApplication([])
-    window = mainwindow()
+    window = MainWindow()
     sys.exit(app.exec())
